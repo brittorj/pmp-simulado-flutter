@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import '../models/questao.dart';
+import '../services/api_service.dart';
 
 class SimuladoScreen extends StatefulWidget {
   final String modulo;
@@ -18,29 +19,32 @@ class _SimuladoScreenState extends State<SimuladoScreen> {
   Map<int, String> respostas = {};
   bool isLoading = true;
   bool showResultado = false;
+  DateTime? tempoInicio;
 
   @override
   void initState() {
     super.initState();
+    tempoInicio = DateTime.now();
     _loadQuestoes();
   }
 
   Future<void> _loadQuestoes() async {
     try {
-      final String response = await rootBundle.loadString('assets/questoes_mobile.json');
-      final data = json.decode(response);
+      List<Questao> questoesCarregadas = [];
       
-      List<dynamic> questoesData = [];
-      if (widget.modulo == 'modulo_1b') {
-        questoesData = data['modulo_1b'] ?? [];
+      if (widget.modulo == 'todos') {
+        // Simulado misto
+        questoesCarregadas = await ApiService.fetchSimuladoMisto(quantidade: 50);
+      } else if (widget.modulo == 'modulo_1b') {
+        questoesCarregadas = await ApiService.fetchQuestoesPorModulo('1b');
       } else if (widget.modulo == 'modulo_2b') {
-        questoesData = data['modulo_2b'] ?? [];
-      } else if (widget.modulo == 'todos') {
-        questoesData = [...(data['modulo_1b'] ?? []), ...(data['modulo_2b'] ?? [])];
+        questoesCarregadas = await ApiService.fetchQuestoesPorModulo('2b');
+      } else if (widget.modulo == 'modulo_3b') {
+        questoesCarregadas = await ApiService.fetchQuestoesPorModulo('3b');
       }
 
       setState(() {
-        questoes = questoesData.map((q) => Questao.fromJson(q)).toList();
+        questoes = questoesCarregadas;
         isLoading = false;
       });
     } catch (e) {
@@ -228,6 +232,25 @@ class _SimuladoScreenState extends State<SimuladoScreen> {
     }
 
     final percentual = ((acertos / questoes.length) * 100).toStringAsFixed(1);
+    
+    // Calcular tempo decorrido
+    final tempoDecorrido = tempoInicio != null 
+        ? DateTime.now().difference(tempoInicio!).inSeconds 
+        : 0;
+    
+    // Salvar resultado no backend
+    final moduloId = widget.modulo == 'modulo_1b' 
+        ? 1 
+        : (widget.modulo == 'modulo_2b' ? 2 : 3);
+    
+    ApiService.salvarResultado(
+      moduloId: moduloId,
+      tipoSimulado: widget.modulo,
+      questoesRespondidas: questoes.length,
+      acertos: acertos,
+      percentual: double.parse(percentual),
+      tempoDecorrido: tempoDecorrido,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -255,6 +278,11 @@ class _SimuladoScreenState extends State<SimuladoScreen> {
                 '$acertos acertos de ${questoes.length} questões',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
+              const SizedBox(height: 10),
+              Text(
+                'Tempo: ${_formatarTempo(tempoDecorrido)}',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
               const SizedBox(height: 40),
               ElevatedButton.icon(
                 onPressed: () => Navigator.pop(context),
@@ -272,5 +300,11 @@ class _SimuladoScreenState extends State<SimuladoScreen> {
         ),
       ),
     );
+  }
+
+  String _formatarTempo(int segundos) {
+    final minutos = segundos ~/ 60;
+    final segs = segundos % 60;
+    return '$minutos min ${segs}s';
   }
 }
