@@ -27,7 +27,7 @@ class _SimuladoScreenState extends State<SimuladoScreen> {
 
   Future<void> _loadQuestoes() async {
     try {
-      final String response = await rootBundle.loadString('assets/questoes.json');
+      final String response = await rootBundle.loadString('assets/questoes_mobile.json');
       final data = json.decode(response);
       
       List<dynamic> questoesData = [];
