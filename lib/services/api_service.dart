@@ -3,9 +3,10 @@ import 'dart:convert';
 import '../models/questao.dart';
 
 class ApiService {
-  // Altere para o IP do seu servidor quando estiver em produção
-  static const String baseUrl = 'http://10.0.2.2:3001'; // Android emulator
-  // Para dispositivo físico, use: 'http://seu_ip_aqui:3001'
+  // Usando URL pública do Render.com
+  static const String baseUrl = 'https://pmp-simulado-backend.onrender.com';
+  // Fallback para desenvolvimento local (Android emulator)
+  // static const String baseUrl = 'http://10.0.2.2:3001';
 
   // Buscar questões por módulo
   static Future<List<Questao>> fetchQuestoesPorModulo(String modulo) async {
@@ -13,7 +14,7 @@ class ApiService {
       final response = await http.get(
         Uri.parse('$baseUrl/api/questoes?modulo=$modulo'),
         headers: {'Content-Type': 'application/json'},
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -37,7 +38,7 @@ class ApiService {
       final response = await http.get(
         Uri.parse('$baseUrl/api/questoes?tipo=misto&quantidade=$quantidade'),
         headers: {'Content-Type': 'application/json'},
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -76,7 +77,7 @@ class ApiService {
           'percentual': percentual,
           'tempo_decorrido': tempoDecorrido,
         }),
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode != 200) {
         throw Exception('Erro ao salvar resultado: ${response.statusCode}');
@@ -93,7 +94,7 @@ class ApiService {
       final response = await http.get(
         Uri.parse('$baseUrl/api/version'),
         headers: {'Content-Type': 'application/json'},
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         return json.decode(response.body);
@@ -112,7 +113,7 @@ class ApiService {
       final response = await http.get(
         Uri.parse('$baseUrl/api/modulos'),
         headers: {'Content-Type': 'application/json'},
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
