@@ -3,8 +3,10 @@ import 'dart:convert';
 import '../models/questao.dart';
 
 class ApiService {
-  // Usando URL pública do Render.com
-  static const String baseUrl = 'https://pmp-simulado-backend.onrender.com';
+  // Usando URL pública do Manus Webdev (web backend)
+  static const String baseUrl = 'https://pmp-backend-web.manus.space';
+  // Fallback para Render.com
+  // static const String baseUrl = 'https://pmp-simulado-backend.onrender.com';
   // Fallback para desenvolvimento local (Android emulator)
   // static const String baseUrl = 'http://10.0.2.2:3001';
 
